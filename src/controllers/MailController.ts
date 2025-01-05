@@ -31,9 +31,21 @@ export class MailController {
             type: "string",
             alias: "t"
         })
-        type?: ServiceType
+        type?: ServiceType,
+        @Option("image", {
+            type: "string",
+            alias: "i",
+            description: ""
+        })
+        image?: string,
+        @Option("image-version", {
+            type: "string",
+            alias: "I",
+            description: ""
+        })
+        imageVersion?: string
     ): Promise<void> {
-        await this.mailService.create(name, type);
+        await this.mailService.create(name, type, image, imageVersion);
     }
 
     @Command("mail:upgrade [name]")
@@ -46,9 +58,21 @@ export class MailController {
             alias: "t",
             description: ""
         })
-        type?: ServiceType
+        type?: ServiceType,
+        @Option("image", {
+            type: "string",
+            alias: "i",
+            description: ""
+        })
+        image?: string,
+        @Option("image-version", {
+            type: "string",
+            alias: "I",
+            description: ""
+        })
+        imageVersion?: string
     ): Promise<void> {
-        await this.mailService.upgrade(name, type);
+        await this.mailService.upgrade(name, type, image, imageVersion);
     }
 
     @Command("mail:destroy <name>")

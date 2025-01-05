@@ -55,7 +55,7 @@ export class MailService {
         return cliTable.toString();
     }
 
-    public async create(name?: string, type?: ServiceType): Promise<void> {
+    public async create(name?: string, type?: ServiceType, image?: string, imageVersion?: string): Promise<void> {
         if(!name || this.config.hasService(name)) {
             name = await promptText({
                 message: "Service name:",
@@ -81,14 +81,16 @@ export class MailService {
 
         const service = new Service({
             name,
-            type
+            type,
+            image,
+            imageVersion
         });
 
         this.config.setService(service);
         this.config.save();
     }
 
-    public async upgrade(name?: string, type?: ServiceType): Promise<void> {
+    public async upgrade(name?: string, type?: ServiceType, image?: string, imageVersion?: string): Promise<void> {
         const service = this.config.getServiceOrDefault(name);
 
         let changed = false;
@@ -100,6 +102,14 @@ export class MailService {
 
             service.type = type;
             changed = true;
+        }
+
+        if(image) {
+            service.image = image;
+        }
+
+        if(imageVersion) {
+            service.imageVersion = imageVersion;
         }
 
         if(changed) {
@@ -136,7 +146,7 @@ export class MailService {
                 case MAILDEV_TYPE: {
                     container = await this.dockerService.createContainer({
                         name: service.containerName,
-                        image: "djfarrelly/maildev",
+                        image: service.imageName,
                         restart: "always",
                         env: {
                             VIRTUAL_HOST: service.containerName,
@@ -149,7 +159,7 @@ export class MailService {
                 case MAILHOG_TYPE:
                     container = await this.dockerService.createContainer({
                         name: service.containerName,
-                        image: "mailhog/mailhog",
+                        image: service.imageName,
                         restart: "always",
                         env: {
                             VIRTUAL_HOST: service.containerName,
