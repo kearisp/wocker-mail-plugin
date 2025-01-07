@@ -41,14 +41,15 @@ export class MailService {
 
     public async list(): Promise<string> {
         const cliTable = new CliTable({
-            head: ["Name", "Type", "Container"]
+            head: ["Name", "Type", "Container", "Image"]
         });
 
         for(const service of this.config.services) {
             cliTable.push([
                 service.name + (this.config.default === service.name ? " (default)" : ""),
                 service.type,
-                service.containerName
+                service.containerName,
+                service.imageName
             ]);
         }
 
@@ -100,16 +101,23 @@ export class MailService {
                 throw new Error("Invalid service type");
             }
 
+            if(service.type !== type) {
+                delete service.image;
+                delete service.imageVersion;
+            }
+
             service.type = type;
             changed = true;
         }
 
         if(image) {
             service.image = image;
+            changed = true;
         }
 
         if(imageVersion) {
             service.imageVersion = imageVersion;
+            changed = true;
         }
 
         if(changed) {

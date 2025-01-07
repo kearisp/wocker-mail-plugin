@@ -18,12 +18,16 @@ export class Service extends Config<ServiceProps> {
 
     public constructor(props: ServiceProps) {
         const {
-            type
+            type,
+            image,
+            imageVersion
         } = props;
 
         super(props);
 
         this.type = type;
+        this.image = image;
+        this.imageVersion = imageVersion;
     }
 
     public get containerName(): string {
@@ -37,7 +41,7 @@ export class Service extends Config<ServiceProps> {
         if(!image) {
             switch(this.type) {
                 case MAILDEV_TYPE:
-                    image = "djfarrelly/maildev";
+                    image = "maildev/maildev";
                     break;
 
                 case MAILHOG_TYPE:
