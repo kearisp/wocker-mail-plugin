@@ -1,5 +1,5 @@
 import {Injectable, PluginConfigService, DockerService} from "@wocker/core";
-import {promptSelect, promptText} from "@wocker/utils";
+import {promptSelect, promptText, promptConfirm} from "@wocker/utils";
 import CliTable from "cli-table3";
 import {MAILDEV_TYPE, MAILHOG_TYPE} from "../env";
 
@@ -126,8 +126,23 @@ export class MailService {
         }
     }
 
-    public async destroy(name: string): Promise<void> {
+    public async destroy(name: string, force?: boolean, yes?: boolean): Promise<void> {
         const service = this.config.getService(name);
+
+        if(!force && service.name === this.config.default) {
+            throw new Error("Can't destroy default service");
+        }
+
+        if(!yes) {
+            const confirm = await promptConfirm({
+                message: `Are you sure you want to delete the "${name}" service? This action cannot be undone and all data will be lost.`,
+                default: false
+            });
+
+            if(!confirm) {
+                throw new Error("Aborted");
+            }
+        }
 
         await this.dockerService.removeContainer(service.containerName);
 
@@ -198,5 +213,18 @@ export class MailService {
         const service = this.config.getServiceOrDefault(name);
 
         await this.dockerService.removeContainer(service.containerName);
+    }
+
+    public use(name?: string): string|void {
+        if(!name) {
+            const service = this.config.getServiceOrDefault();
+
+            return service.name;
+        }
+
+        const service = this.config.getService(name);
+
+        this.config.default = service.name;
+        this.config.save();
     }
 }
