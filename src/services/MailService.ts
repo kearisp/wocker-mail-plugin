@@ -1,5 +1,5 @@
 import {Injectable, PluginConfigService, DockerService} from "@wocker/core";
-import {promptSelect, promptText} from "@wocker/utils";
+import {promptSelect, promptText, promptConfirm} from "@wocker/utils";
 import CliTable from "cli-table3";
 import {MAILDEV_TYPE, MAILHOG_TYPE} from "../env";
 
@@ -41,21 +41,22 @@ export class MailService {
 
     public async list(): Promise<string> {
         const cliTable = new CliTable({
-            head: ["Name", "Type", "Container"]
+            head: ["Name", "Type", "Container", "Image"]
         });
 
         for(const service of this.config.services) {
             cliTable.push([
                 service.name + (this.config.default === service.name ? " (default)" : ""),
                 service.type,
-                service.containerName
+                service.containerName,
+                service.imageName
             ]);
         }
 
         return cliTable.toString();
     }
 
-    public async create(name?: string, type?: ServiceType): Promise<void> {
+    public async create(name?: string, type?: ServiceType, image?: string, imageVersion?: string): Promise<void> {
         if(!name || this.config.hasService(name)) {
             name = await promptText({
                 message: "Service name:",
@@ -81,14 +82,16 @@ export class MailService {
 
         const service = new Service({
             name,
-            type
+            type,
+            image,
+            imageVersion
         });
 
         this.config.setService(service);
         this.config.save();
     }
 
-    public async upgrade(name?: string, type?: ServiceType): Promise<void> {
+    public async upgrade(name?: string, type?: ServiceType, image?: string, imageVersion?: string): Promise<void> {
         const service = this.config.getServiceOrDefault(name);
 
         let changed = false;
@@ -98,7 +101,22 @@ export class MailService {
                 throw new Error("Invalid service type");
             }
 
+            if(service.type !== type) {
+                delete service.image;
+                delete service.imageVersion;
+            }
+
             service.type = type;
+            changed = true;
+        }
+
+        if(image) {
+            service.image = image;
+            changed = true;
+        }
+
+        if(imageVersion) {
+            service.imageVersion = imageVersion;
             changed = true;
         }
 
@@ -108,8 +126,23 @@ export class MailService {
         }
     }
 
-    public async destroy(name: string): Promise<void> {
+    public async destroy(name: string, force?: boolean, yes?: boolean): Promise<void> {
         const service = this.config.getService(name);
+
+        if(!force && service.name === this.config.default) {
+            throw new Error("Can't destroy default service");
+        }
+
+        if(!yes) {
+            const confirm = await promptConfirm({
+                message: `Are you sure you want to delete the "${name}" service? This action cannot be undone and all data will be lost.`,
+                default: false
+            });
+
+            if(!confirm) {
+                throw new Error("Aborted");
+            }
+        }
 
         await this.dockerService.removeContainer(service.containerName);
 
@@ -136,7 +169,7 @@ export class MailService {
                 case MAILDEV_TYPE: {
                     container = await this.dockerService.createContainer({
                         name: service.containerName,
-                        image: "djfarrelly/maildev",
+                        image: service.imageName,
                         restart: "always",
                         env: {
                             VIRTUAL_HOST: service.containerName,
@@ -149,7 +182,7 @@ export class MailService {
                 case MAILHOG_TYPE:
                     container = await this.dockerService.createContainer({
                         name: service.containerName,
-                        image: "mailhog/mailhog",
+                        image: service.imageName,
                         restart: "always",
                         env: {
                             VIRTUAL_HOST: service.containerName,
@@ -180,5 +213,18 @@ export class MailService {
         const service = this.config.getServiceOrDefault(name);
 
         await this.dockerService.removeContainer(service.containerName);
+    }
+
+    public use(name?: string): string|void {
+        if(!name) {
+            const service = this.config.getServiceOrDefault();
+
+            return service.name;
+        }
+
+        const service = this.config.getService(name);
+
+        this.config.default = service.name;
+        this.config.save();
     }
 }
