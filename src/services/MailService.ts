@@ -102,7 +102,7 @@ export class MailService {
             }
 
             if(service.type !== type) {
-                delete service.image;
+                delete service.imageName;
                 delete service.imageVersion;
             }
 
@@ -111,7 +111,7 @@ export class MailService {
         }
 
         if(image) {
-            service.image = image;
+            service.imageName = image;
             changed = true;
         }
 
@@ -169,7 +169,7 @@ export class MailService {
                 case MAILDEV_TYPE: {
                     container = await this.dockerService.createContainer({
                         name: service.containerName,
-                        image: service.imageName,
+                        image: service.imageTag,
                         restart: "always",
                         env: {
                             VIRTUAL_HOST: service.containerName,
@@ -182,7 +182,7 @@ export class MailService {
                 case MAILHOG_TYPE:
                     container = await this.dockerService.createContainer({
                         name: service.containerName,
-                        image: service.imageName,
+                        image: service.imageTag,
                         restart: "always",
                         env: {
                             VIRTUAL_HOST: service.containerName,
