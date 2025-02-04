@@ -1,4 +1,4 @@
-import {Injectable, PluginConfigService, DockerService} from "@wocker/core";
+import {Injectable, PluginConfigService, DockerService, ProxyService} from "@wocker/core";
 import {promptSelect, promptText, promptConfirm} from "@wocker/utils";
 import CliTable from "cli-table3";
 import {MAILDEV_TYPE, MAILHOG_TYPE} from "../env";
@@ -13,7 +13,8 @@ export class MailService {
 
     public constructor(
         protected readonly pluginConfigService: PluginConfigService,
-        protected readonly dockerService: DockerService
+        protected readonly dockerService: DockerService,
+        protected readonly proxyService: ProxyService
     ) {}
 
     public get config(): Config {
@@ -49,7 +50,7 @@ export class MailService {
                 service.name + (this.config.default === service.name ? " (default)" : ""),
                 service.type,
                 service.containerName,
-                service.imageName
+                service.imageTag
             ]);
         }
 
@@ -102,7 +103,7 @@ export class MailService {
             }
 
             if(service.type !== type) {
-                delete service.image;
+                delete service.imageName;
                 delete service.imageVersion;
             }
 
@@ -111,7 +112,7 @@ export class MailService {
         }
 
         if(image) {
-            service.image = image;
+            service.imageName = image;
             changed = true;
         }
 
@@ -169,11 +170,13 @@ export class MailService {
                 case MAILDEV_TYPE: {
                     container = await this.dockerService.createContainer({
                         name: service.containerName,
-                        image: service.imageName,
+                        image: service.imageTag,
                         restart: "always",
                         env: {
                             VIRTUAL_HOST: service.containerName,
-                            VIRTUAL_PORT: "80"
+                            VIRTUAL_PORT: "80",
+                            MAILDEV_WEB_PORT: "80",
+                            MAILDEV_SMTP_PORT: "25"
                         }
                     });
                     break;
@@ -182,7 +185,7 @@ export class MailService {
                 case MAILHOG_TYPE:
                     container = await this.dockerService.createContainer({
                         name: service.containerName,
-                        image: service.imageName,
+                        image: service.imageTag,
                         restart: "always",
                         env: {
                             VIRTUAL_HOST: service.containerName,
@@ -202,11 +205,16 @@ export class MailService {
             }
         } = await container.inspect();
 
-        if(!Running) {
-            await container.start();
+        await this.proxyService.start();
 
-            console.info(`Started at ${service.containerName}`);
+        if(Running) {
+            console.info(`Service "${service.name}" is already running at http://${service.containerName}`);
+            return;
         }
+
+        await container.start();
+
+        console.info(`Service "${service.name}" started at http://${service.containerName}`);
     }
 
     public async stop(name?: string): Promise<void> {
