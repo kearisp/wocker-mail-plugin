@@ -53,7 +53,7 @@ export class Service extends Config<ServiceProps> {
         }
 
         if(!imageVersion) {
-            imageVersion = "latest";
+            return imageName;
         }
 
         return `${imageName}:${imageVersion}`;
