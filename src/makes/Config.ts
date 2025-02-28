@@ -1,7 +1,3 @@
-import {
-    ConfigCollection
-} from "@wocker/core";
-
 import {Service, ServiceProps} from "./Service";
 
 
