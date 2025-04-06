@@ -162,7 +162,7 @@ export class MailService {
 
         if(container && restart) {
             await this.dockerService.removeContainer(service.containerName);
-            container = null
+            container = null;
         }
 
         if(!container) {
