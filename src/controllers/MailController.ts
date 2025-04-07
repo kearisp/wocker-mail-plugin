@@ -57,7 +57,7 @@ export class MailController {
         @Option("type", {
             type: "string",
             alias: "t",
-            description: "- Set service type (`MAILDEV` or `MAILHOG`)."
+            description: "Set service type (`MAILDEV` or `MAILHOG`)."
         })
         type?: ServiceType,
         @Option("image", {
