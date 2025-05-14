@@ -5,7 +5,6 @@ import {
     Param,
     Option
 } from "@wocker/core";
-
 import {ServiceType} from "../makes/Service";
 import {MailService} from "../services/MailService";
 
