@@ -1,5 +1,5 @@
 import {Injectable, PluginConfigService, DockerService, ProxyService} from "@wocker/core";
-import {promptSelect, promptText, promptConfirm} from "@wocker/utils";
+import {promptInput, promptSelect, promptConfirm} from "@wocker/utils";
 import CliTable from "cli-table3";
 import {MAILDEV_TYPE, MAILHOG_TYPE} from "../env";
 
@@ -59,14 +59,11 @@ export class MailService {
 
     public async create(name?: string, type?: ServiceType, image?: string, imageVersion?: string): Promise<void> {
         if(!name || this.config.hasService(name)) {
-            name = await promptText({
-                message: "Service name:",
+            name = await promptInput({
+                message: "Service name",
+                required: "Service name is required",
                 validate: (value?: string) => {
-                    if(!value) {
-                        return "Service name is required";
-                    }
-
-                    if(this.config.hasService(value)) {
+                    if(value && this.config.hasService(value)) {
                         return "Service already exists";
                     }
 
