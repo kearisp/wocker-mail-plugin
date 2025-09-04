@@ -2,8 +2,7 @@ import {Injectable, PluginConfigService, DockerService, ProxyService} from "@woc
 import {promptInput, promptSelect, promptConfirm} from "@wocker/utils";
 import CliTable from "cli-table3";
 import {MAILDEV_TYPE, MAILHOG_TYPE} from "../env";
-
-import {Config, ConfigProps} from "../makes/Config";
+import {Config} from "../makes/Config";
 import {Service, ServiceType} from "../makes/Service";
 
 
@@ -19,22 +18,7 @@ export class MailService {
 
     public get config(): Config {
         if(!this._config) {
-            const fs = this.pluginConfigService.fs,
-                data: ConfigProps = fs.exists("config.json")
-                    ? fs.readJSON("config.json")
-                    : {}
-
-            this._config = new class extends Config {
-                public save(): void {
-                    if(!fs.exists("")) {
-                        fs.mkdir("", {
-                            recursive: true
-                        });
-                    }
-
-                    fs.writeJSON("config.json", this.toObject());
-                }
-            }(data);
+            this._config = Config.make(this.pluginConfigService.fs);
         }
 
         return this._config;

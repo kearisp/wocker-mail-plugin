@@ -2,6 +2,12 @@
 
 ###### Docker workspace for web projects
 
+[![npm version](https://img.shields.io/npm/v/@wocker/mail-plugin.svg)](https://www.npmjs.com/package/@wocker/mail-plugin)
+[![Publish](https://github.com/kearisp/wocker-mail-plugin/actions/workflows/publish-latest.yml/badge.svg?event=release)](https://github.com/kearisp/wocker-mail-plugin/actions/workflows/publish-latest.yml)
+[![License](https://img.shields.io/npm/l/@wocker/mail-plugin)](https://github.com/kearisp/wocker-mail-plugin/blob/master/LICENSE)
+
+[![npm total downloads](https://img.shields.io/npm/dt/@wocker/mail-plugin.svg)](https://www.npmjs.com/package/@wocker/mail-plugin)
+
 ## Installation
 
 **Note:** It is recommended to install Wocker globally to ensure accessibility from any directory in your terminal.
