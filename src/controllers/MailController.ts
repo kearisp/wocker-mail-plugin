@@ -5,8 +5,8 @@ import {
     Param,
     Option
 } from "@wocker/core";
-import {ServiceType} from "../makes/Service";
 import {MailService} from "../services/MailService";
+import {ProviderType} from "../types";
 
 
 @Controller()
@@ -31,7 +31,7 @@ export class MailController {
             alias: "t",
             description: "Service type. Choose between `MAILDEV` or `MAILHOG`"
         })
-        type?: ServiceType,
+        type?: ProviderType,
         @Option("image", {
             type: "string",
             alias: "i",
@@ -58,7 +58,7 @@ export class MailController {
             alias: "t",
             description: "Set service type (`MAILDEV` or `MAILHOG`)."
         })
-        type?: ServiceType,
+        type?: ProviderType,
         @Option("image", {
             type: "string",
             alias: "i",

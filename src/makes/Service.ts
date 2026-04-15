@@ -1,11 +1,9 @@
-import {MAILDEV_TYPE, MAILHOG_TYPE} from "../env";
+import {ProviderType, ProviderTypeEnum} from "../types";
 
-
-export type ServiceType = typeof MAILDEV_TYPE | typeof MAILHOG_TYPE;
 
 export type ServiceProps = {
     name: string;
-    type: ServiceType;
+    type: ProviderType;
     image?: string;
     imageName?: string;
     imageVersion?: string;
@@ -13,7 +11,7 @@ export type ServiceProps = {
 
 export class Service {
     public name: string;
-    public type: ServiceType;
+    public type: ProviderType;
     public imageName?: string;
     public imageVersion?: string;
 
@@ -42,11 +40,11 @@ export class Service {
 
         if(!imageName) {
             switch(this.type) {
-                case MAILDEV_TYPE:
+                case ProviderTypeEnum.MAILDEV:
                     imageName = "maildev/maildev";
                     break;
 
-                case MAILHOG_TYPE:
+                case ProviderTypeEnum.MAILHOG:
                     imageName = "mailhog/mailhog";
                     break;
             }

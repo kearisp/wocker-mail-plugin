@@ -1,9 +1,9 @@
 import {Injectable, PluginConfigService, DockerService, ProxyService} from "@wocker/core";
 import {promptInput, promptSelect, promptConfirm} from "@wocker/utils";
 import CliTable from "cli-table3";
-import {MAILDEV_TYPE, MAILHOG_TYPE} from "../env";
 import {Config} from "../makes/Config";
-import {Service, ServiceType} from "../makes/Service";
+import {Service} from "../makes/Service";
+import {ProviderType} from "../types";
 
 
 @Injectable()
@@ -41,7 +41,7 @@ export class MailService {
         return cliTable.toString();
     }
 
-    public async create(name?: string, type?: ServiceType, image?: string, imageVersion?: string): Promise<void> {
+    public async create(name?: string, type?: ProviderType, image?: string, imageVersion?: string): Promise<void> {
         if(!name || this.config.hasService(name)) {
             name = await promptInput({
                 message: "Service name",
@@ -56,9 +56,9 @@ export class MailService {
             }) as string;
         }
 
-        if(!type || ![MAILDEV_TYPE, MAILHOG_TYPE].includes(type)) {
-            type = await promptSelect<ServiceType>({
-                options: [MAILDEV_TYPE, MAILHOG_TYPE]
+        if(!type || !ProviderType.values().includes(type)) {
+            type = await promptSelect<ProviderType>({
+                options: [ProviderType.MAILDEV, ProviderType.MAILHOG]
             });
         }
 
@@ -73,13 +73,13 @@ export class MailService {
         this.config.save();
     }
 
-    public async upgrade(name?: string, type?: ServiceType, image?: string, imageVersion?: string): Promise<void> {
+    public async upgrade(name?: string, type?: ProviderType, image?: string, imageVersion?: string): Promise<void> {
         const service = this.config.getServiceOrDefault(name);
 
         let changed = false;
 
         if(type) {
-            if(![MAILDEV_TYPE, MAILHOG_TYPE].includes(type)) {
+            if(!ProviderType.values().includes(type)) {
                 throw new Error("Invalid service type");
             }
 
@@ -148,7 +148,7 @@ export class MailService {
 
         if(!container) {
             switch(service.type) {
-                case MAILDEV_TYPE: {
+                case ProviderType.MAILDEV: {
                     container = await this.dockerService.createContainer({
                         name: service.containerName,
                         image: service.imageTag,
@@ -163,7 +163,7 @@ export class MailService {
                     break;
                 }
 
-                case MAILHOG_TYPE:
+                case ProviderType.MAILHOG:
                     container = await this.dockerService.createContainer({
                         name: service.containerName,
                         image: service.imageTag,

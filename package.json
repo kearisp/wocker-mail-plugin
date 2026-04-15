@@ -1,6 +1,7 @@
 {
     "name": "@wocker/mail-plugin",
-    "version": "1.0.7",
+    "type": "commonjs",
+    "version": "1.0.8",
     "author": "Kris Papercut <krispcut@gmail.com>",
     "description": "Mail plugin for wocker",
     "license": "MIT",
