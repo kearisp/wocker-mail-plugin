@@ -10,6 +10,7 @@ import {ProviderType} from "../types";
 
 
 @Controller()
+@Description("Mail commands")
 export class MailController {
     public constructor(
         protected readonly mailService: MailService
@@ -26,26 +27,14 @@ export class MailController {
     public async create(
         @Param("name")
         name?: string,
-        @Option("type", {
-            type: "string",
-            alias: "t",
-            description: "Service type. Choose between `MAILDEV` or `MAILHOG`"
-        })
+        @Option("type", "t")
+        @Description(`Service type. Choose between "${ProviderType.values().join("\", \"")}"`)
         type?: ProviderType,
-        @Option("image", {
-            type: "string",
-            alias: "i",
-            description: "Custom Docker image to use."
-        })
-        image?: string,
-        @Option("image-version", {
-            type: "string",
-            alias: "I",
-            description: "Custom image version to use."
-        })
-        imageVersion?: string
+        @Option("image", "i")
+        @Description("Custom Docker image to use.")
+        image?: string
     ): Promise<void> {
-        await this.mailService.create(name, type, image, imageVersion);
+        await this.mailService.create(name, type, image);
     }
 
     @Command("mail:upgrade [name]")
@@ -56,7 +45,7 @@ export class MailController {
         @Option("type", {
             type: "string",
             alias: "t",
-            description: "Set service type (`MAILDEV` or `MAILHOG`)."
+            description: `Set service type ("${ProviderType.values().join("\", \"")}").`
         })
         type?: ProviderType,
         @Option("image", {
@@ -64,15 +53,9 @@ export class MailController {
             alias: "i",
             description: "Specify custom Docker image."
         })
-        image?: string,
-        @Option("image-version", {
-            type: "string",
-            alias: "I",
-            description: "Specify Docker image version."
-        })
-        imageVersion?: string
+        image?: string
     ): Promise<void> {
-        await this.mailService.upgrade(name, type, image, imageVersion);
+        await this.mailService.upgrade(name, type, image);
     }
 
     @Command("mail:destroy <name>")

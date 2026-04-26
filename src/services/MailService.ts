@@ -41,7 +41,7 @@ export class MailService {
         return cliTable.toString();
     }
 
-    public async create(name?: string, type?: ProviderType, image?: string, imageVersion?: string): Promise<void> {
+    public async create(name?: string, type?: ProviderType, image?: string): Promise<void> {
         if(!name || this.config.hasService(name)) {
             name = await promptInput({
                 message: "Service name",
@@ -58,22 +58,22 @@ export class MailService {
 
         if(!type || !ProviderType.values().includes(type)) {
             type = await promptSelect<ProviderType>({
-                options: [ProviderType.MAILDEV, ProviderType.MAILHOG]
+                message: "Provider",
+                options: ProviderType.options()
             });
         }
 
         const service = new Service({
             name,
             type,
-            image,
-            imageVersion
+            image
         });
 
         this.config.setService(service);
         this.config.save();
     }
 
-    public async upgrade(name?: string, type?: ProviderType, image?: string, imageVersion?: string): Promise<void> {
+    public async upgrade(name?: string, type?: ProviderType, image?: string): Promise<void> {
         const service = this.config.getServiceOrDefault(name);
 
         let changed = false;
@@ -84,8 +84,7 @@ export class MailService {
             }
 
             if(service.type !== type) {
-                delete service.imageName;
-                delete service.imageVersion;
+                delete service.image;
             }
 
             service.type = type;
@@ -93,12 +92,7 @@ export class MailService {
         }
 
         if(image) {
-            service.imageName = image;
-            changed = true;
-        }
-
-        if(imageVersion) {
-            service.imageVersion = imageVersion;
+            service.image = image;
             changed = true;
         }
 

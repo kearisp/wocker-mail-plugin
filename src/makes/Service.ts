@@ -1,3 +1,4 @@
+import {Image} from "@wocker/utils";
 import {ProviderType, ProviderTypeEnum} from "../types";
 
 
@@ -12,6 +13,7 @@ export type ServiceProps = {
 export class Service {
     public name: string;
     public type: ProviderType;
+    protected _image?: string;
     public imageName?: string;
     public imageVersion?: string;
 
@@ -19,15 +21,14 @@ export class Service {
         const {
             name,
             type,
-            image,
-            imageName = image,
-            imageVersion
+            imageName,
+            imageVersion,
+            image
         } = props;
 
         this.name = name;
         this.type = type;
-        this.imageName = imageName;
-        this.imageVersion = imageVersion;
+        this._image = image || (imageName && imageVersion ? `${imageName}:${imageVersion}` : imageName);
     }
 
     public get containerName(): string {
@@ -35,34 +36,41 @@ export class Service {
     }
 
     public get imageTag(): string {
-        let imageName = this.imageName,
-            imageVersion = this.imageVersion;
+        let image = this._image
 
-        if(!imageName) {
+        if(!image) {
             switch(this.type) {
                 case ProviderTypeEnum.MAILDEV:
-                    imageName = "maildev/maildev";
+                    image = "maildev/maildev";
                     break;
 
                 case ProviderTypeEnum.MAILHOG:
-                    imageName = "mailhog/mailhog";
+                    image = "mailhog/mailhog";
                     break;
             }
         }
 
-        if(!imageVersion) {
-            return imageName;
+        return image;
+    }
+
+    public set image(image: undefined | string) {
+        if(typeof image === "undefined") {
+            delete this._image;
+            return;
         }
 
-        return `${imageName}:${imageVersion}`;
+        if(Image.isValid(image)) {
+            throw new Error(`Invalid image ${image}`);
+        }
+
+        this._image = image;
     }
 
     public toObject(): ServiceProps {
         return {
             name: this.name,
             type: this.type,
-            imageName: this.imageName,
-            imageVersion: this.imageVersion
+            image: this._image
         };
     }
 }
