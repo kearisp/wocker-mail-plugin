@@ -6,7 +6,7 @@ export enum ProviderTypeEnum {
 export type ProviderType = ProviderTypeEnum;
 
 export const ProviderType = Object.assign({}, ProviderTypeEnum, {
-    values: () => {
+    values: (): ProviderTypeEnum[] => {
         return Object.values(ProviderTypeEnum);
     },
     options: () => {
