@@ -182,14 +182,17 @@ export class MailService {
 
         await this.proxyService.start();
 
+        const smtpPort = service.type === ProviderType.MAILHOG ? "1025" : "25";
+        const smtpInfo = `SMTP: ${service.containerName}:${smtpPort}`;
+
         if(Running) {
-            console.info(`Service "${service.name}" is already running at http://${service.containerName}`);
+            console.info(`Service "${service.name}" is already running at http://${service.containerName} (${smtpInfo})`);
             return;
         }
 
         await container.start();
 
-        console.info(`Service "${service.name}" started at http://${service.containerName}`);
+        console.info(`Service "${service.name}" started at http://${service.containerName} (${smtpInfo})`);
     }
 
     public async stop(name?: string): Promise<void> {
